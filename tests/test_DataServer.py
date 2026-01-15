@@ -52,13 +52,11 @@ class TestDataServerTiming(unittest.TestCase):
         # We need to mock the class datetime.datetime, but keep timedelta working
         mock_datetime_class = MagicMock()
         mock_datetime_class.now.side_effect = self._fake_now
-        mock_datetime_class.UTC = datetime.timezone.utc
         
         # We need to ensure datetime.timedelta is the real one because it's used in the code
         mock_datetime_module.datetime = mock_datetime_class
         mock_datetime_module.timedelta = datetime.timedelta
         mock_datetime_module.timezone = datetime.timezone
-        mock_datetime_module.UTC = datetime.timezone.utc
         
         # Mock sleep to advance time
         mock_sleep.side_effect = self._fake_sleep

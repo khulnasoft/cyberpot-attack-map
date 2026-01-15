@@ -2,9 +2,11 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
+  repository_dispatch:
+    types: [manual-trigger]
 
 jobs:
   lint-and-test:
@@ -50,7 +52,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and Load
+      - name: Build and Load Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .

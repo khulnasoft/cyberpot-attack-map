@@ -16,7 +16,7 @@ import os
 # Configuration
 redis_url = os.getenv('MAP_REDIS_URL', 'redis://127.0.0.1:6379')
 web_port = int(os.getenv('MAP_WEB_PORT', '64299'))
-version = 'Attack Map Server 2.5.0'
+version = 'Attack Map Server 3.0.0'
 
 
 
