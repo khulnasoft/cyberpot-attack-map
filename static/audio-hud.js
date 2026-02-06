@@ -75,6 +75,9 @@ class AudioHUD {
 
     // Retro Video Game Effect
     playRetro() {
+        if (!this.enabled || !this.initialized) return;
+        if (this.context.state === 'suspended') this.context.resume();
+
         const osc = this.context.createOscillator();
         const gain = this.context.createGain();
         osc.type = 'sawtooth';
