@@ -111,6 +111,10 @@
     box-shadow: 0 4px 12px var(--glow);
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* Common Button Base */
 .btn-base {
     border: none;
@@ -439,6 +443,15 @@ body {
     height: 100%;
     max-height: 100%;
     background: var(--bg-primary);
+    position: relative;
+    z-index: 1;
+}
+
+#globe-3d {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
     position: relative;
     z-index: 1;
 }
@@ -2954,3 +2967,167 @@ html[data-theme="light"] .leaflet-container {
 #sound-options {
     display: none;
 }
+/* Playback Bar */
+.playback-bar {
+    position: fixed;
+    bottom: 350px;
+    left: 0;
+    right: 200px;
+    height: 60px;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 2px solid var(--primary-color);
+    padding: 0 var(--spacing-lg);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideUp 0.3s ease;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.6);
+}
+
+.playback-bar.hidden {
+    display: none !important;
+}
+
+.playback-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.playback-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 4px;
+    letter-spacing: 1.5px;
+    box-shadow: 0 0 10px var(--glow);
+}
+
+#playback-time {
+    font-family: var(--font-mono);
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+}
+
+.playback-scrubber {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    max-width: 600px;
+    gap: var(--spacing-lg);
+}
+
+#playback-slider {
+    flex: 1;
+    accent-color: var(--primary-color);
+    height: 6px;
+    cursor: pointer;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    appearance: none;
+}
+
+#playback-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--text-primary);
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--glow);
+}
+
+.playback-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-lg);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.playback-btn:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.playback-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Phase 3: Visual Pulse Effects */
+.pulse-critical {
+    animation: criticalPulse 2s infinite;
+}
+
+.pulse-high {
+    animation: highPulse 2s infinite;
+}
+
+@keyframes criticalPulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+@keyframes highPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 102, 0, 0.3); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 102, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 102, 0, 0); }
+}
+
+/* Dashboard Card HUD Updates */
+.dashboard-card.alert-active {
+    border-color: var(--primary-color) !important;
+    background: rgba(226, 0, 116, 0.05);
+}
+
+/* Contextual Insights Tooltip (Globe) */
+.globe-insight-overlay {
+    position: absolute;
+    top: 80px;
+    right: 220px;
+    width: 280px;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-primary);
+    border-left: 3px solid var(--primary-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    color: white;
+    z-index: 500;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.insight-header {
+    font-size: var(--font-xs);
+    font-weight: 800;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.insight-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-sm);
+    margin-bottom: 4px;
+}
+
+.insight-label { color: var(--text-secondary); }
+.insight-value { font-weight: 600; font-family: var(--font-mono); }

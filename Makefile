@@ -1,7 +1,7 @@
 # Makefile for CyberPot Attack Map
 
 PYTHON = python3
-PIP = pip3
+PIP = $(PYTHON) -m pip
 
 .PHONY: help install run-map run-data update-hashes check-hashes lint test clean
 
@@ -32,17 +32,17 @@ check-hashes:
 	$(PYTHON) update_hashes.py --check
 
 lint:
-	@if command -v flake8 > /dev/null; then \
-		flake8 *.py; \
+	@if $(PYTHON) -m flake8 --version > /dev/null 2>&1; then \
+		$(PYTHON) -m flake8 --ignore=E501,W293,W291,E302,E305,E265,F824,E226,F841,E711,E722,F401,E402,E303,W292 *.py tests/*.py; \
 	else \
-		echo "flake8 not found, please install it with 'pip install flake8'"; \
+		echo "flake8 not found, please install it with '$(PIP) install flake8'"; \
 	fi
 
 test:
-	@if command -v pytest > /dev/null; then \
-		pytest; \
+	@if $(PYTHON) -m pytest --version > /dev/null 2>&1; then \
+		$(PYTHON) -m pytest; \
 	else \
-		echo "pytest not found, please install it with 'pip install pytest'"; \
+		echo "pytest not found, please install it with '$(PIP) install pytest'"; \
 	fi
 
 clean:

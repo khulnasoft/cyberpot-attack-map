@@ -326,6 +326,11 @@ class AttackMapDashboard {
         this.cacheInitialized = false;
         this.restoringFromCache = false;
 
+        // Playback (Time Machine) state
+        this.playbackMode = false;
+        this.playbackHistory = [];
+        this.playbackIndex = 0;
+
         this.init();
     }
 
@@ -340,6 +345,7 @@ class AttackMapDashboard {
         this.initSettings();
         this.initSoundSystem();
         this.initHoneypotTracking();
+        this.initPlaybackSystem();
 
         // Initialize cache system
         await this.initializeCache();
@@ -2138,6 +2144,14 @@ Cache Statistics:
             // Ensure checkbox matches the setting
             soundAlerts.checked = this.settings.soundAlerts;
         }
+
+        // Feature Integration: Notify audioHud of current settings
+        if (window.audioHud) {
+            window.audioHud.setEnabled(this.settings.soundAlerts);
+            if (this.settings.alertSound) {
+                window.audioHud.selectedSound = this.settings.alertSound;
+            }
+        }
     }
 
     async clearCache() {
@@ -2921,6 +2935,11 @@ Cache Statistics:
 
     // Public API for external components
     addAttackEvent(event) {
+        // Intelligence Integration: Classify the attack
+        if (window.attackClassifier) {
+            event.classification = window.attackClassifier.classify(event);
+        }
+
         console.log('[DEBUG] Dashboard received attack event:', event);
 
         event.timestamp = Date.now();
@@ -2946,6 +2965,11 @@ Cache Statistics:
 
         // Play sound alert for new attack
         this.playAlertSound();
+
+        // Feature Integration: Visual Alerts (Phase 3)
+        if (event.classification) {
+            this.triggerVisualAlert(event.classification.severity);
+        }
 
         // Add to timeline data in real-time
         this.addAttackToTimeline(event);
@@ -3145,6 +3169,25 @@ Cache Statistics:
         row.appendChild(protocolCell);
 
         addCell('port-cell', event.port || event.dst_port || 'N/A');
+
+        // Feature Integration: Classification
+        const classification = event.classification || { name: 'Generic Threat', severity: 'low' };
+        const classCell = document.createElement('td');
+        classCell.className = 'classification-cell';
+        const classBadge = document.createElement('span');
+        classBadge.className = `severity-badge severity-${classification.severity}`;
+        classBadge.textContent = classification.name;
+        if (window.attackClassifier) {
+            classBadge.style.backgroundColor = window.attackClassifier.getSeverityColor(classification.severity);
+            classBadge.style.color = '#000';
+            classBadge.style.fontWeight = '700';
+            classBadge.style.padding = '2px 8px';
+            classBadge.style.borderRadius = '4px';
+            classBadge.style.fontSize = '11px';
+        }
+        classCell.appendChild(classBadge);
+        row.appendChild(classCell);
+
         addCell('cyberpot-hostname-cell', event.cyberpot_hostname || 'Unknown');
 
         // Add to top of table
@@ -3156,6 +3199,83 @@ Cache Statistics:
         }
 
         console.log('[DEBUG] Added row to attack table for IP:', event.ip || event.src_ip);
+    }
+
+    initPlaybackSystem() {
+        const slider = document.getElementById('playback-slider');
+        const playbackBar = document.getElementById('playback-bar');
+        const exitBtn = document.getElementById('playback-exit');
+        const prevBtn = document.getElementById('playback-prev');
+        const nextBtn = document.getElementById('playback-next');
+
+        if (!slider || !playbackBar) return;
+
+        exitBtn.onclick = () => this.exitPlaybackMode();
+
+        slider.oninput = (e) => {
+            this.playbackIndex = parseInt(e.target.value);
+            this.updatePlaybackView();
+        };
+
+        // Allow entering playback by clicking the Activity Timeline
+        const timelineCanvas = document.getElementById('timeline-chart');
+        if (timelineCanvas) {
+            timelineCanvas.style.cursor = 'pointer';
+            timelineCanvas.title = 'Click to enter Time Machine mode';
+            timelineCanvas.onclick = () => this.enterPlaybackMode();
+        }
+    }
+
+    async enterPlaybackMode() {
+        if (this.playbackMode) return;
+
+        console.log('[PLAYBACK] Entering Time Machine mode...');
+        this.playbackMode = true;
+        this.playbackHistory = await this.attackCache.getStoredEvents();
+        this.playbackHistory.sort((a, b) => a.timestamp - b.timestamp);
+
+        const playbackBar = document.getElementById('playback-bar');
+        const slider = document.getElementById('playback-slider');
+
+        if (playbackBar && slider) {
+            playbackBar.classList.remove('hidden');
+            slider.max = this.playbackHistory.length - 1;
+            slider.value = this.playbackHistory.length - 1;
+            this.playbackIndex = this.playbackHistory.length - 1;
+            this.updatePlaybackView();
+        }
+
+        this.showNotification('Entered Time Machine mode. Live feed paused.', 'info', 'playback');
+    }
+
+    exitPlaybackMode() {
+        this.playbackMode = false;
+        document.getElementById('playback-bar').classList.add('hidden');
+        this.showNotification('Live feed resumed.', 'success', 'playback');
+    }
+
+    updatePlaybackView() {
+        if (!this.playbackHistory || this.playbackHistory.length === 0) return;
+        const event = this.playbackHistory[this.playbackIndex];
+        if (!event) return;
+
+        // Update UI
+        const timeDisplay = document.getElementById('playback-time');
+        if (timeDisplay) {
+            const date = new Date(event.timestamp);
+            timeDisplay.textContent = `Replaying: ${date.toLocaleString()}`;
+        }
+
+        // Visualize on map
+        // We need to trigger map visuals without adding to history
+        if (window.processRestoredAttack) {
+            window.processRestoredAttack(event, true);
+        }
+
+        // Active visual for 3D globe too
+        if (window.globeView && window.globeView.active) {
+            window.globeView.addAttack(event);
+        }
     }
 
     updateIPTracking(ip, country, event = null) {
@@ -3654,6 +3774,35 @@ Cache Statistics:
                 tooltip.remove();
             }
         }, 3000);
+    }
+
+    /**
+     * Phase 3: Visual Alerts & Pulse Effects
+     * Triggers UI animations based on threat severity
+     */
+    triggerVisualAlert(severity) {
+        if (!['critical', 'high'].includes(severity)) return;
+
+        const navbar = document.querySelector('.top-navbar');
+        const pulseClass = severity === 'critical' ? 'pulse-critical' : 'pulse-high';
+
+        // Pulse the navbar
+        if (navbar) {
+            navbar.classList.add(pulseClass);
+            setTimeout(() => navbar.classList.remove(pulseClass), 5000);
+        }
+
+        // Pulse the Dashboard tab button if not active
+        const dashTab = document.querySelector('[data-tab="overview"]');
+        if (dashTab && !dashTab.classList.contains('active')) {
+            dashTab.classList.add('pulse-high');
+            setTimeout(() => dashTab.classList.remove('pulse-high'), 3000);
+        }
+
+        // Notification for critical events
+        if (severity === 'critical') {
+            console.log('%c [CRITICAL ALERT] High-severity attack detected! ', 'background: #dc3545; color: #fff; font-weight: bold;');
+        }
     }
 }
 

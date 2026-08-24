@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  attack-map-server:
+    build: .
+    image: cyberpot-attack-map:latest
+    ports:
+      - "64299:64299"
+    depends_on:
+      - map_redis
+    environment:
+      - CYBERPOT_ATTACKMAP_TEXT=ENABLED
+      - MAP_REDIS_URL=redis://map_redis:6379
+    networks:
+      - attack-map-net
+    command: python AttackMapServer.py
+
+  data-server:
+    build: .
+    image: cyberpot-attack-map:latest
+    depends_on:
+      - map_redis
+      - elasticsearch
+    environment:
+      - CYBERPOT_ATTACKMAP_TEXT=ENABLED
+      - MAP_REDIS_HOST=map_redis
+      - MAP_ES_URL=http://elasticsearch:9200
+    networks:
+      - attack-map-net
+    command: python DataServer.py
+
+  map_redis:
+    image: redis:7-alpine
+    networks:
+      - attack-map-net
+
+  # Assuming Elasticsearch is provided externally or defined here
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks:
+      - attack-map-net
+
+networks:
+  attack-map-net:
+    driver: bridge

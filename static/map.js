@@ -98,7 +98,7 @@ map.addLayer(markers);
 map.addLayer(attackLines);
 
 // Cache restoration function for map markers
-window.processRestoredAttack = function (event) {
+window.processRestoredAttack = function (event, isPlayback = false) {
     console.log('[MAP-RESTORE] Processing restored attack:', event);
 
     // Skip if event doesn't have required data
@@ -137,7 +137,7 @@ window.processRestoredAttack = function (event) {
         const srcLatLng = new L.LatLng(restoredMsg.src_lat, restoredMsg.src_long);
         const dstLatLng = new L.LatLng(restoredMsg.dst_lat, restoredMsg.dst_long);
 
-        restoreMarkerData(restoredMsg, srcLatLng, dstLatLng, event);
+        restoreMarkerData(restoredMsg, srcLatLng, dstLatLng, event, isPlayback);
     } else {
         // Fallback: get coordinates from country/location data
         Promise.all([
@@ -148,7 +148,7 @@ window.processRestoredAttack = function (event) {
                 const srcLatLng = new L.LatLng(srcCoords.lat, srcCoords.lng);
                 const dstLatLng = new L.LatLng(dstCoords.lat, dstCoords.lng);
 
-                restoreMarkerData(restoredMsg, srcLatLng, dstLatLng, event);
+                restoreMarkerData(restoredMsg, srcLatLng, dstLatLng, event, isPlayback);
             }
         }).catch(error => {
             console.log('[MAP-RESTORE] Error getting coordinates:', error);
@@ -157,96 +157,98 @@ window.processRestoredAttack = function (event) {
 };
 
 // Helper function to restore marker data and add visual elements
-function restoreMarkerData(restoredMsg, srcLatLng, dstLatLng, originalEvent) {
-    const srcKey = srcLatLng.lat + "," + srcLatLng.lng;
-    const dstKey = dstLatLng.lat + "," + dstLatLng.lng;
+function restoreMarkerData(restoredMsg, srcLatLng, dstLatLng, originalEvent, isPlayback = false) {
+    if (!isPlayback) {
+        const srcKey = srcLatLng.lat + "," + srcLatLng.lng;
+        const dstKey = dstLatLng.lat + "," + dstLatLng.lng;
 
-    // Initialize or update circleAttackData for source location
-    if (!circleAttackData[srcKey]) {
-        circleAttackData[srcKey] = {
-            country: restoredMsg.country,
-            iso_code: restoredMsg.iso_code,
-            attacks: [],
-            totalAttacks: 0,
-            ips: {},
-            firstSeen: new Date(originalEvent.timestamp),
-            lastSeen: new Date(originalEvent.timestamp),
-            lastProtocol: restoredMsg.protocol,
-            lastColor: restoredMsg.color
-        };
-    } else {
-        // Update protocol tracking for restored attacks
-        // For restoration, we want to preserve the latest protocol/color from actual restore order
-        circleAttackData[srcKey].lastProtocol = restoredMsg.protocol;
-        circleAttackData[srcKey].lastColor = restoredMsg.color;
-        circleAttackData[srcKey].lastSeen = new Date(originalEvent.timestamp);
-    }
-
-    // Initialize IP data if needed
-    if (!circleAttackData[srcKey].ips[restoredMsg.src_ip]) {
-        circleAttackData[srcKey].ips[restoredMsg.src_ip] = {
-            src_ip: restoredMsg.src_ip,
-            ip_rep: restoredMsg.ip_rep,
-            attacks: [],
-            firstSeen: new Date(originalEvent.timestamp),
-            lastSeen: new Date(originalEvent.timestamp)
-        };
-    } else {
-        // Update reputation if new data is provided
-        if (restoredMsg.ip_rep) {
-            circleAttackData[srcKey].ips[restoredMsg.src_ip].ip_rep = restoredMsg.ip_rep;
+        // Initialize or update circleAttackData for source location
+        if (!circleAttackData[srcKey]) {
+            circleAttackData[srcKey] = {
+                country: restoredMsg.country,
+                iso_code: restoredMsg.iso_code,
+                attacks: [],
+                totalAttacks: 0,
+                ips: {},
+                firstSeen: new Date(originalEvent.timestamp),
+                lastSeen: new Date(originalEvent.timestamp),
+                lastProtocol: restoredMsg.protocol,
+                lastColor: restoredMsg.color
+            };
+        } else {
+            // Update protocol tracking for restored attacks
+            // For restoration, we want to preserve the latest protocol/color from actual restore order
+            circleAttackData[srcKey].lastProtocol = restoredMsg.protocol;
+            circleAttackData[srcKey].lastColor = restoredMsg.color;
+            circleAttackData[srcKey].lastSeen = new Date(originalEvent.timestamp);
         }
-    }
 
-    // Add attack data to source location
-    const attackData = {
-        protocol: restoredMsg.protocol,
-        port: restoredMsg.dst_port,
-        timestamp: new Date(originalEvent.timestamp),
-        src_ip: restoredMsg.src_ip
-    };
+        // Initialize IP data if needed
+        if (!circleAttackData[srcKey].ips[restoredMsg.src_ip]) {
+            circleAttackData[srcKey].ips[restoredMsg.src_ip] = {
+                src_ip: restoredMsg.src_ip,
+                ip_rep: restoredMsg.ip_rep,
+                attacks: [],
+                firstSeen: new Date(originalEvent.timestamp),
+                lastSeen: new Date(originalEvent.timestamp)
+            };
+        } else {
+            // Update reputation if new data is provided
+            if (restoredMsg.ip_rep) {
+                circleAttackData[srcKey].ips[restoredMsg.src_ip].ip_rep = restoredMsg.ip_rep;
+            }
+        }
 
-    circleAttackData[srcKey].attacks.push(attackData);
-    circleAttackData[srcKey].totalAttacks++;
-    circleAttackData[srcKey].lastSeen = new Date(originalEvent.timestamp);
-    circleAttackData[srcKey].ips[restoredMsg.src_ip].attacks.push(attackData);
-    circleAttackData[srcKey].ips[restoredMsg.src_ip].lastSeen = new Date(originalEvent.timestamp);
-
-    // Initialize or update markerAttackData for destination (honeypot)
-    if (!markerAttackData[dstKey]) {
-        markerAttackData[dstKey] = {
-            country: restoredMsg.dst_country_name,
-            iso_code: restoredMsg.dst_iso_code,
-            dst_ip: restoredMsg.dst_ip,
-            hostname: restoredMsg.cyberpot_hostname,
-            attacks: [],
-            totalAttacks: 0,
-            uniqueAttackers: new Set(),
-            protocolStats: {},
-            firstSeen: new Date(originalEvent.timestamp),
-            lastUpdate: new Date(originalEvent.timestamp)
+        // Add attack data to source location
+        const attackData = {
+            protocol: restoredMsg.protocol,
+            port: restoredMsg.dst_port,
+            timestamp: new Date(originalEvent.timestamp),
+            src_ip: restoredMsg.src_ip
         };
-    }
 
-    // Add attack to honeypot data
-    markerAttackData[dstKey].attacks.push({
-        src_ip: restoredMsg.src_ip,
-        protocol: restoredMsg.protocol,
-        port: restoredMsg.dst_port,
-        timestamp: new Date(originalEvent.timestamp)
-    });
-    markerAttackData[dstKey].totalAttacks++;
-    markerAttackData[dstKey].uniqueAttackers.add(restoredMsg.src_ip);
-    markerAttackData[dstKey].protocolStats[restoredMsg.protocol] =
-        (markerAttackData[dstKey].protocolStats[restoredMsg.protocol] || 0) + 1;
-    markerAttackData[dstKey].lastUpdate = new Date(originalEvent.timestamp);
+        circleAttackData[srcKey].attacks.push(attackData);
+        circleAttackData[srcKey].totalAttacks++;
+        circleAttackData[srcKey].lastSeen = new Date(originalEvent.timestamp);
+        circleAttackData[srcKey].ips[restoredMsg.src_ip].attacks.push(attackData);
+        circleAttackData[srcKey].ips[restoredMsg.src_ip].lastSeen = new Date(originalEvent.timestamp);
 
-    // Keep only last 50 attacks per location for performance
-    if (markerAttackData[dstKey].attacks.length > 50) {
-        markerAttackData[dstKey].attacks = markerAttackData[dstKey].attacks.slice(-50);
-    }
-    if (circleAttackData[srcKey].attacks.length > 50) {
-        circleAttackData[srcKey].attacks = circleAttackData[srcKey].attacks.slice(-50);
+        // Initialize or update markerAttackData for destination (honeypot)
+        if (!markerAttackData[dstKey]) {
+            markerAttackData[dstKey] = {
+                country: restoredMsg.dst_country_name,
+                iso_code: restoredMsg.dst_iso_code,
+                dst_ip: restoredMsg.dst_ip,
+                hostname: restoredMsg.cyberpot_hostname,
+                attacks: [],
+                totalAttacks: 0,
+                uniqueAttackers: new Set(),
+                protocolStats: {},
+                firstSeen: new Date(originalEvent.timestamp),
+                lastUpdate: new Date(originalEvent.timestamp)
+            };
+        }
+
+        // Add attack to honeypot data
+        markerAttackData[dstKey].attacks.push({
+            src_ip: restoredMsg.src_ip,
+            protocol: restoredMsg.protocol,
+            port: restoredMsg.dst_port,
+            timestamp: new Date(originalEvent.timestamp)
+        });
+        markerAttackData[dstKey].totalAttacks++;
+        markerAttackData[dstKey].uniqueAttackers.add(restoredMsg.src_ip);
+        markerAttackData[dstKey].protocolStats[restoredMsg.protocol] =
+            (markerAttackData[dstKey].protocolStats[restoredMsg.protocol] || 0) + 1;
+        markerAttackData[dstKey].lastUpdate = new Date(originalEvent.timestamp);
+
+        // Keep only last 50 attacks per location for performance
+        if (markerAttackData[dstKey].attacks.length > 50) {
+            markerAttackData[dstKey].attacks = markerAttackData[dstKey].attacks.slice(-50);
+        }
+        if (circleAttackData[srcKey].attacks.length > 50) {
+            circleAttackData[srcKey].attacks = circleAttackData[srcKey].attacks.slice(-50);
+        }
     }
 
     // Add visual elements (circle for attacker and marker for honeypot)
@@ -1189,6 +1191,13 @@ const messageHandlers = {
             handleParticle(msg.color, srcPoint),
             handleTraffic(msg.color, srcPoint, dstPoint, srcLatLng)
         ]).then(() => {
+            // Feature Integration (Phase 1 & 2)
+            if (window.attackClassifier) {
+                msg.classification = window.attackClassifier.classify(msg);
+            }
+            if (window.globeView) window.globeView.addAttack(msg);
+            if (window.audioHud) window.audioHud.trigger(msg);
+
             // Add attack data AFTER visual elements are created/updated
             const attackData = {
                 protocol: msg.protocol,
@@ -1520,19 +1529,36 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Start connection health monitoring
-    // Removed aggressive health check as per new logic:
-    // - Connected: Data < 30s
-    // - Idle: No Data > 30s (but socket open)
-    // - Disconnected: Socket Closed
-    /*
-    function startConnectionHealthCheck() {
-      if (connectionHealthCheck) clearInterval(connectionHealthCheck);
-      
-      connectionHealthCheck = setInterval(() => {
-         // ... removed ...
-      }, 30000);
+    /* ... existing health check logic ... */
+});
+
+// View Toggle Logic (2D vs 3D)
+document.addEventListener('DOMContentLoaded', function () {
+    const viewToggle = document.getElementById('view-toggle');
+    const mapContainer = document.getElementById('map');
+    const globeContainer = document.getElementById('globe-3d');
+
+    if (viewToggle) {
+        viewToggle.addEventListener('click', function () {
+            const is3D = !mapContainer.classList.contains('hidden');
+
+            if (is3D) {
+                // Switch to 3D
+                mapContainer.classList.add('hidden');
+                globeContainer.classList.remove('hidden');
+                if (window.globeView) window.globeView.show();
+                viewToggle.querySelector('span').textContent = '2D';
+                viewToggle.querySelector('i').className = 'fas fa-map';
+                viewToggle.classList.add('active');
+            } else {
+                // Switch to 2D
+                mapContainer.classList.remove('hidden');
+                globeContainer.classList.add('hidden');
+                if (window.globeView) window.globeView.hide();
+                viewToggle.querySelector('span').textContent = '3D';
+                viewToggle.querySelector('i').className = 'fas fa-globe-americas';
+                viewToggle.classList.remove('active');
+            }
+        });
     }
-    
-    startConnectionHealthCheck();
-    */
 });

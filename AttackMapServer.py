@@ -11,13 +11,12 @@ import json
 import redis.asyncio as redis
 from aiohttp import web
 
+import os
+
 # Configuration
-# Within CyberPot: redis_url = 'redis://map_redis:6379'
-#redis_url = 'redis://127.0.0.1:6379'
-#web_port = 1234
-redis_url = 'redis://map_redis:6379'
-web_port = 64299
-version = 'Attack Map Server 2.5.0'
+redis_url = os.getenv('MAP_REDIS_URL', 'redis://127.0.0.1:6379')
+web_port = int(os.getenv('MAP_WEB_PORT', '64299'))
+version = 'Attack Map Server 3.0.0'
 
 
 
