@@ -1,4 +1,4 @@
-aiohttp==3.13.2
+aiohttp==3.13.3
 elasticsearch==8.18.1
 pytz==2025.2
 redis==7.1.0
