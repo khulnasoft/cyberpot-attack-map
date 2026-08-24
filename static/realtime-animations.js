@@ -215,7 +215,7 @@ class AnomalyManager {
         }
 
         // Check for unusual protocol usage
-        for (const [protocol, count] of Object.entries(currentStats.protocolStats)) {
+        for (const [protocol, count] of Object.entries(currentStats.protocolStats || {})) {
             if (count > this.baselineStats.avgAttacksPerProtocol * this.alertThresholds.spike) {
                 detected.push({
                     type: 'unusual-protocol',
@@ -228,7 +228,7 @@ class AnomalyManager {
         }
 
         // Check for unusual geographic patterns
-        for (const [country, count] of Object.entries(currentStats.countryStats)) {
+        for (const [country, count] of Object.entries(currentStats.countryStats || {})) {
             if (count > this.baselineStats.avgAttacksPerCountry * this.alertThresholds.unusual) {
                 detected.push({
                     type: 'unusual-source',
