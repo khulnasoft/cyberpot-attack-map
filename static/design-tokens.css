@@ -1,0 +1,200 @@
+/**
+ * CyberPot Attack Map - Design System Design Tokens
+ * Professional Cybersecurity Dashboard Color Palette
+ * 
+ * This file documents the design tokens used throughout the application.
+ * All tokens are defined in index.css within the :root selector.
+ */
+
+/* ============================================
+   COLOR PALETTE - Primary & Brand Colors
+   ============================================ */
+
+/*
+  Primary Brand Color - Cyan
+  Used for: Primary actions, highlights, active states
+  - --primary-color: #00D9FF (Main cyan)
+  - --primary-hover: #00B8D4 (Darker hover state)
+  - --primary-dark: #0099B3 (Darkest variant)
+  - --primary-light: #33E5FF (Lighter variant)
+*/
+
+/* ============================================
+   BACKGROUND COLORS - Dark Theme
+   ============================================ */
+
+/*
+  Dark Theme Background Hierarchy
+  - --bg-primary: #0F172A (Deepest, main background)
+  - --bg-secondary: #1E293B (Secondary surfaces)
+  - --bg-tertiary: #334155 (Tertiary surfaces, hover states)
+  - --bg-card: #1E293B (Card backgrounds)
+  - --bg-modal: #0F172A (Modal backgrounds)
+  - --bg-navbar: rgba(15, 23, 42, 0.98) (Navigation bar with transparency)
+*/
+
+/* ============================================
+   TEXT COLORS - Professional Hierarchy
+   ============================================ */
+
+/*
+  Text Color Hierarchy
+  - --text-primary: #F1F5F9 (Primary text, highest contrast)
+  - --text-secondary: #CBD5E1 (Secondary text, readable)
+  - --text-muted: #94A3B8 (Muted text, low priority)
+  - --text-disabled: #64748B (Disabled state text)
+*/
+
+/* ============================================
+   ACCENT & STATUS COLORS
+   ============================================ */
+
+/*
+  Status Colors
+  - --success-color: #10B981 (Positive/normal activity)
+  - --warning-color: #F59E0B (Caution/attention needed)
+  - --danger-color: #EF4444 (Critical/error state)
+  - --info-color: #3B82F6 (Information/neutral)
+*/
+
+/* ============================================
+   BORDER & SHADOW COLORS
+   ============================================ */
+
+/*
+  Borders
+  - --border-primary: #334155 (Main borders)
+  - --border-secondary: #475569 (Secondary dividers)
+  - --border-accent: var(--primary-color) (Highlight borders, uses primary cyan)
+  
+  Shadows & Glows
+  - --shadow-light: rgba(0, 0, 0, 0.1) (Subtle shadows)
+  - --shadow-medium: rgba(0, 0, 0, 0.2) (Standard shadows)
+  - --shadow-heavy: rgba(0, 0, 0, 0.4) (Strong shadows)
+  - --glow: rgba(0, 217, 255, 0.2) (Subtle cyan glow)
+  - --glow-intense: rgba(0, 217, 255, 0.4) (Strong cyan glow)
+*/
+
+/* ============================================
+   TYPOGRAPHY SYSTEM
+   ============================================ */
+
+/*
+  Font Families
+  - --font-primary: 'Inter', system fonts (Body text and headings)
+  - --font-mono: 'JetBrains Mono', monospace (Code and data display)
+  
+  Font Sizes
+  - --font-xs: 0.875rem (14px - Small text, labels)
+  - --font-sm: 1rem (16px - Body text)
+  - --font-md: 1.125rem (18px - Medium text)
+  - --font-lg: 1.25rem (20px - Large text)
+  - --font-xl: 1.5rem (24px - Heading text)
+  - --font-xxl: 1.875rem (30px - Large headings)
+*/
+
+/* ============================================
+   SPACING SCALE
+   ============================================ */
+
+/*
+  Consistent spacing system (4px base unit)
+  - --spacing-xs: 0.25rem (4px)
+  - --spacing-sm: 0.5rem (8px)
+  - --spacing-md: 1rem (16px)
+  - --spacing-lg: 1.5rem (24px)
+  - --spacing-xl: 2rem (32px)
+  - --spacing-xxl: 3rem (48px)
+*/
+
+/* ============================================
+   BORDER RADIUS
+   ============================================ */
+
+/*
+  Rounded corners for consistency
+  - --radius-sm: 4px (Subtle rounding)
+  - --radius-md: 8px (Standard rounding)
+  - --radius-lg: 12px (Prominent rounding)
+  - --radius-xl: 16px (Large rounding)
+  - --radius-round: 50% (Fully circular)
+*/
+
+/* ============================================
+   TRANSITIONS & ANIMATIONS
+   ============================================ */
+
+/*
+  Animation Timing
+  - --transition-fast: 0.15s ease (Quick interactions)
+  - --transition-normal: 0.3s ease (Standard transitions)
+  - --transition-slow: 0.5s ease (Deliberate animations)
+  
+  Custom Animations (defined in index.css)
+  - glow-pulse: Cybersecurity glow effect
+  - attackPulse: Active attack indicator
+  - slideIn: Smooth card entrance
+  - countUp: Counter increment effect
+  - securityPulse: Expanding pulse ring
+  - arcFlow: Attack path animation
+*/
+
+/* ============================================
+   Z-INDEX HIERARCHY
+   ============================================ */
+
+/*
+  Layering system for proper stacking context
+  - --z-dropdown: 1000 (Dropdown menus)
+  - --z-modal: 9999 (Modal dialogs)
+  - --z-tooltip: 10000 (Tooltips, highest layer)
+*/
+
+/* ============================================
+   USAGE GUIDELINES
+   ============================================ */
+
+/*
+  Color Usage Best Practices:
+  
+  1. Primary Actions: Use --primary-color (#00D9FF)
+     - Buttons, active tabs, highlights
+  
+  2. Status Indicators:
+     - Success: #10B981 (Normal/good)
+     - Warning: #F59E0B (Attention needed)
+     - Danger: #EF4444 (Critical alerts)
+  
+  3. Text Hierarchy:
+     - Primary content: --text-primary
+     - Secondary info: --text-secondary
+     - Disabled/muted: --text-muted or --text-disabled
+  
+  4. Background Layering:
+     - Page background: --bg-primary
+     - Cards/panels: --bg-secondary or --bg-card
+     - Hover states: --bg-tertiary
+  
+  5. Interactive Elements:
+     - Use --glow for subtle hover effects
+     - Use --glow-intense for active states
+     - Apply glow-pulse animation for critical elements
+  
+  6. Typography:
+     - Use --font-primary for most text
+     - Use --font-mono for IPs, timestamps, technical data
+     - Maintain consistent font sizes from --font-xs to --font-xxl
+*/
+
+/* ============================================
+   LIGHT THEME OVERRIDES
+   ============================================ */
+
+/*
+  Light mode uses a reversed color palette:
+  - Backgrounds: White (#FFF) to Light Slate (#F8FAFC)
+  - Text: Dark Slate (#0F172A) to Medium Slate (#334155)
+  - Borders: Light Gray (#E2E8F0) to Medium Gray (#CBD5E1)
+  
+  Primary accent color remains the same: #00D9FF
+*/
