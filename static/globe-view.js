@@ -166,12 +166,23 @@ class GlobeView {
         if (!overlay || !content) return;
 
         header.textContent = title;
-        content.innerHTML = Object.entries(data).map(([key, val]) => `
-            <div class="insight-item">
-                <span class="insight-label">${key}:</span>
-                <span class="insight-value">${val}</span>
-            </div>
-        `).join('');
+        content.innerHTML = '';
+        Object.entries(data).forEach(([key, val]) => {
+            const item = document.createElement('div');
+            item.className = 'insight-item';
+            
+            const label = document.createElement('span');
+            label.className = 'insight-label';
+            label.textContent = `${key}:`;
+            
+            const value = document.createElement('span');
+            value.className = 'insight-value';
+            value.textContent = val;
+            
+            item.appendChild(label);
+            item.appendChild(value);
+            content.appendChild(item);
+        });
 
         overlay.classList.remove('hidden');
         overlay.style.opacity = '1';
